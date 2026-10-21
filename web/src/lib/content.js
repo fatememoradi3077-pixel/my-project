@@ -1,6 +1,10 @@
 /** Storefront copy and configuration that is not product data. */
 
-const img = (id, w = 1200) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=80`;
+/**
+ * Background loop for the hero section, served from the app's own public/ folder
+ * (web/public/videos) so the hero owns its media instead of hotlinking a host.
+ */
+export const HERO_VIDEO_SRC = '/videos/hero-background.mp4';
 
 export const BRAND = {
   name: 'TechHaven',
@@ -23,8 +27,6 @@ export const HERO_SLIDES = [
     copy: 'Discover cutting-edge gadgets designed to power your world.',
     ctaLabel: 'SHOP NOW',
     ctaTo: '/shop',
-    image: img('1550009158-9ebf69173e03', 1400),
-    alt: 'Premium electronics arranged on a dark studio surface',
   },
   {
     id: 'audio-event',
@@ -34,8 +36,6 @@ export const HERO_SLIDES = [
     copy: 'Studio-grade headphones and earbuds built for long sessions.',
     ctaLabel: 'SHOP AUDIO',
     ctaTo: '/shop?category=headphones',
-    image: img('1468495244123-6c6c332eeece', 1400),
-    alt: 'Over-ear headphones photographed on a dark background',
   },
   {
     id: 'mobile-week',
@@ -45,8 +45,6 @@ export const HERO_SLIDES = [
     copy: '5G phones with pro-grade cameras and all-day battery life.',
     ctaLabel: 'SHOP PHONES',
     ctaTo: '/shop?category=smartphones',
-    image: img('1518770660439-4636190af475', 1400),
-    alt: 'Modern smartphone beside technical components',
   },
 ];
 

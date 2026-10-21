@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Headphones, ChevronLeft, ChevronRight, RotateCcw, ShieldCheck, Truck } from 'lucide-react';
-import { HERO_BENEFITS, HERO_SLIDES } from '../../lib/content.js';
+import { HERO_BENEFITS, HERO_SLIDES, HERO_VIDEO_SRC } from '../../lib/content.js';
 
 const BENEFIT_ICONS = { shield: ShieldCheck, truck: Truck, refresh: RotateCcw, headset: Headphones };
 const AUTOPLAY_MS = 6500;
@@ -92,19 +92,18 @@ export function Hero() {
               className="absolute -right-6 bottom-6 h-28 w-28 rotate-45 rounded-lg border border-brand/20 bg-brand/5"
             />
             <div className="relative h-[210px] overflow-hidden rounded-xl border border-line bg-surface-panel sm:h-[250px] lg:h-[268px]">
-              {HERO_SLIDES.map((item, slideIndex) => (
-                <img
-                  key={item.id}
-                  src={item.image}
-                  alt={slideIndex === index ? item.alt : ''}
-                  aria-hidden={slideIndex === index ? undefined : 'true'}
-                  loading={slideIndex === 0 ? 'eager' : 'lazy'}
-                  decoding="async"
-                  className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
-                    slideIndex === index ? 'opacity-100' : 'opacity-0'
-                  }`}
-                />
-              ))}
+              {/* Decorative background loop: muted, so it always autoplays. */}
+              <video
+                src={HERO_VIDEO_SRC}
+                className="absolute inset-0 h-full w-full object-cover"
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+                aria-hidden="true"
+                tabIndex={-1}
+              />
               <div
                 aria-hidden="true"
                 className="absolute inset-0 bg-[linear-gradient(180deg,rgba(16,17,20,0.12)_0%,rgba(16,17,20,0.55)_100%)]"

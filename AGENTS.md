@@ -38,6 +38,11 @@ Everything is recreated from source on boot, so edits appear without rebuilding 
 - **Product imagery** is loaded from `images.unsplash.com` direct links (verified to return 200)
   listed in `api/db/seed-data.js`; `ProductImage` falls back to an in-app placeholder if a
   remote image fails, so a dead URL degrades instead of breaking the layout.
+- **The hero background is a video, not a photo.** `web/public/videos/hero-background.mp4` is committed
+  in the repo and served by Vite at `/videos/hero-background.mp4` (`HERO_VIDEO_SRC` in
+  `web/src/lib/content.js`). It autoplays, loops and is muted (muted is what makes autoplay allowed in
+  every browser), so it plays continuously while the slide copy rotates on top of it; swap the file to
+  change the loop.
 - **Promo countdown** is driven by `PROMO_ENDS_AT` in `web/src/lib/content.js`. It is a real
   countdown and renders an expired state after that timestamp — update the constant for a new
   campaign instead of hardcoding days/hours.
