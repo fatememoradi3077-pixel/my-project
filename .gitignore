@@ -1,0 +1,15 @@
+node_modules/
+dist/
+build/
+.vite/
+
+# Local environment overrides. The committed defaults file is intentionally kept.
+.env
+.env.*
+!.env.base44-defaults
+
+# Tooling / editor
+.DS_Store
+*.log
+npm-debug.log*
+coverage/
