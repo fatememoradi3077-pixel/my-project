@@ -146,6 +146,13 @@ input, select, textarea, button {
   padding-block: var(--space-xl);
 }
 
+/* فاصله‌ی لنگرها از هدر ثابت، تا عنوان بخش‌ها زیر هدر پنهان نشود */
+.section,
+.service-card,
+#main {
+  scroll-margin-top: 6rem;
+}
+
 .section--soft {
   background: var(--blue-soft);
 }
@@ -322,6 +329,19 @@ input, select, textarea, button {
   transform: translateY(0);
 }
 
+/* متنی که فقط برای صفحه‌خوان‌ها خوانده می‌شود */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* آیکون‌های SVG خطی */
 svg {
   fill: none;
@@ -333,11 +353,21 @@ svg {
 
 /* ---------- ۴) هدر و منو ---------- */
 .site-header {
-  position: absolute;
+  position: fixed;
   inset-block-start: 0;
   inset-inline: 0;
   z-index: 50;
   padding-block: 1.15rem;
+  transition: background-color var(--transition), box-shadow var(--transition),
+              padding var(--transition);
+}
+
+/* پس از خروج از بنر، هدر برای خوانایی روی محتوای روشن پس‌زمینه می‌گیرد */
+.site-header.is-scrolled {
+  padding-block: 0.7rem;
+  background: rgba(11, 49, 88, 0.97);
+  box-shadow: 0 12px 30px rgba(8, 36, 70, 0.18);
+  backdrop-filter: blur(8px);
 }
 
 .site-header__inner {
@@ -519,6 +549,9 @@ svg {
   inset-block-start: calc(100% + 0.85rem);
   inset-inline: 0;
   display: none;
+  max-height: calc(100vh - 6rem);
+  max-height: calc(100svh - 6rem);
+  overflow-y: auto;
   padding: 1rem;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--radius);
@@ -528,6 +561,19 @@ svg {
 
 .menu-toggle[open] .mobile-nav {
   display: block;
+  animation: menuIn 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+/* ورود نرم پنل منوی موبایل */
+@keyframes menuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .mobile-nav ul {
@@ -552,16 +598,46 @@ svg {
 }
 
 /* ---------- ۵) بنر اصلی ---------- */
+/* بنر دو لایه دارد: مسیر اسکرول (.hero) و قاب چسبان ویدیو (.hero__sticky).
+   با اسکرول به پایین، زمان ویدیو جلو و با اسکرول به بالا، عقب می‌رود. */
 .hero {
+  --hero-view: 100vh;   /* ارتفاع قاب چسبان ویدیو */
+  --hero-track: 100vh;  /* طول مسیر اسکرول؛ بدون جاوااسکریپت یک صفحه است */
   position: relative;
-  display: grid;
-  place-items: center;
-  min-height: clamp(560px, 78vh, 650px);
+  height: var(--hero-track);
+  min-height: 560px;
   background: var(--navy);
-  overflow: hidden;
 }
 
-.hero__img {
+/* با فعال بودن جاوااسکریپت مسیر اسکرول بلند می‌شود تا ویدیو کامل پیش برود */
+.js .hero {
+  --hero-track: 260vh;
+}
+
+/* واحد svh در مرورگرهای موبایل از پرش‌شدن نوار آدرس جلوگیری می‌کند */
+@supports (height: 100svh) {
+  .hero {
+    --hero-view: 100svh;
+    --hero-track: 100svh;
+  }
+
+  .js .hero {
+    --hero-track: 260svh;
+  }
+}
+
+.hero__sticky {
+  position: sticky;
+  inset-block-start: 0;
+  display: grid;
+  place-items: center;
+  height: var(--hero-view);
+  min-height: 560px;
+  overflow: hidden;
+  background: var(--navy);
+}
+
+.hero__video {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -1212,6 +1288,11 @@ svg {
 
 /* تبلت: منوی موبایل، چیدمان تک‌ستونه در بخش‌های دوستونه */
 @media (max-width: 960px) {
+  /* مسیر اسکرول کوتاه‌تر تا پیمایش ویدیو روی صفحه‌های کوچک سخت نشود */
+  .js .hero {
+    --hero-track: 200svh;
+  }
+
   .nav {
     display: none;
   }
@@ -1273,8 +1354,9 @@ svg {
 
 /* موبایل: تک‌ستونه کردن کارت‌ها و بزرگ‌تر کردن نواحی لمسی */
 @media (max-width: 660px) {
-  .hero {
-    min-height: 92svh;
+  /* روی موبایل مسیر اسکرول کوتاه‌تر است تا پیمایش طولانی نشود */
+  .js .hero {
+    --hero-track: 180svh;
   }
 
   .hero__title {

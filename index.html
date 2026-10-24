@@ -13,6 +13,9 @@
 
   <!-- تمام استایل‌های سایت در همین فایل قرار دارد -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- افزودن کلاس js پیش از رندر: بنر با ویدیوی اسکرولی، بدون پرش چیدمان بالا می‌آید -->
+  <script>document.documentElement.classList.add("js");</script>
 </head>
 <body>
 
@@ -87,23 +90,32 @@
   <main id="main">
 
     <!-- ============ بنر اصلی (Hero) ============ -->
+    <!-- مسیر اسکرول: قاب چسبان ویدیو در بالای صفحه ثابت می‌ماند و با اسکرول پیش می‌رود -->
     <section class="hero" id="hero">
-      <img class="hero__img"
-           src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&amp;fit=crop&amp;w=2000&amp;q=80"
-           alt="ویلای لوکس مدرن با استخر و نورپردازی گرم هنگام غروب"
-           fetchpriority="high" decoding="async">
-      <div class="hero__overlay" aria-hidden="true"></div>
+      <div class="hero__sticky">
 
-      <div class="container hero__inner">
-        <p class="hero__eyebrow">مرجع املاک لوکس و سرمایه‌گذاری</p>
-        <h1 class="hero__title">خانه‌ای فراتر از انتظار، سرمایه‌گذاری هوشمندانه</h1>
-        <p class="hero__text">
-          بهترین املاک لوکس را در موقعیت‌های ارزشمند پیدا کنید؛ انتخابی مطمئن برای زندگی امروز و سرمایه‌گذاری فردا.
-        </p>
-        <div class="hero__actions">
-          <a class="btn btn--primary" href="#properties">مشاهده املاک</a>
-          <a class="btn btn--ghost" href="#contact">مشاوره رایگان</a>
+        <!-- ویدیو بدون پخش خودکار؛ زمان آن به موقعیت اسکرول صفحه بسته است -->
+        <video class="hero__video" id="heroVideo" muted playsinline preload="auto"
+               poster="https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&amp;fit=crop&amp;w=2000&amp;q=80"
+               aria-hidden="true">
+          <source src="https://media.base44.com/videos/public/6ad85af2c94f759fd8ebeb7b/5d1e12f80_148732265_1792828418296344.mp4" type="video/mp4">
+        </video>
+        <p class="sr-only">ویدیوی کوتاه از یک ویلای لوکس مدرن با استخر و نورپردازی گرم هنگام غروب که با اسکرول جلو و عقب می‌رود.</p>
+
+        <div class="hero__overlay" aria-hidden="true"></div>
+
+        <div class="container hero__inner">
+          <p class="hero__eyebrow">مرجع املاک لوکس و سرمایه‌گذاری</p>
+          <h1 class="hero__title">خانه‌ای فراتر از انتظار، سرمایه‌گذاری هوشمندانه</h1>
+          <p class="hero__text">
+            بهترین املاک لوکس را در موقعیت‌های ارزشمند پیدا کنید؛ انتخابی مطمئن برای زندگی امروز و سرمایه‌گذاری فردا.
+          </p>
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="#properties">مشاهده املاک</a>
+            <a class="btn btn--ghost" href="#contact">مشاوره رایگان</a>
+          </div>
         </div>
+
       </div>
     </section>
 
@@ -558,6 +570,98 @@
       </div>
     </div>
   </footer>
+
+  <!-- ============ جاوااسکریپت سبک و بدون وابستگی ============
+       تنها کار این اسکریپت: بستن زمان ویدیو به اسکرول صفحه (جلو و عقب)
+       و افزودن پس‌زمینه به هدر پس از خروج از بنر. اگر اجرا نشود، بنر
+       به‌صورت یک صفحه ثابت با تصویر پوستر نمایش داده می‌شود. -->
+  <script>
+  (function () {
+    var root = document.documentElement;
+    var hero = document.getElementById('hero');
+    var video = document.getElementById('heroVideo');
+    var header = document.querySelector('.site-header');
+    var menu = document.querySelector('.menu-toggle');
+    if (!hero || !video) return;
+
+    var sticky = hero.querySelector('.hero__sticky');
+    if (!sticky) return;
+
+    /* احترام به تنظیم «کاهش حرکت»: مسیر اسکرول و پخش ویدیو فعال نمی‌شود */
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      root.classList.remove('js');
+      return;
+    }
+
+    var duration = 0;
+    var target = 0;
+    var queued = false;
+
+    /* پیشرفت اسکرول داخل بنر: از صفر (ابتدای بنر) تا یک (انتهای مسیر) */
+    function progress() {
+      var track = hero.offsetHeight - sticky.offsetHeight;
+      if (track <= 0) return 0;
+      var ratio = -hero.getBoundingClientRect().top / track;
+      return ratio < 0 ? 0 : ratio > 1 ? 1 : ratio;
+    }
+
+    /* اعمال زمان هدف روی ویدیو؛ اگر پرش قبلی تمام نشده، منتظر می‌ماند */
+    function apply() {
+      if (!duration || video.seeking) return;
+      if (Math.abs(video.currentTime - target) > 0.02) {
+        try { video.currentTime = target; } catch (error) { /* مرورگر اجازه نداد */ }
+      }
+    }
+
+    function update() {
+      queued = false;
+      if (duration) {
+        target = Math.min(progress() * duration, Math.max(duration - 0.05, 0));
+        apply();
+      }
+      if (header) header.classList.toggle('is-scrolled', window.pageYOffset > 40);
+    }
+
+    function onScroll() {
+      if (queued) return;
+      queued = true;
+      window.requestAnimationFrame(update);
+    }
+
+    /* آماده‌سازی ویدیو؛ اگر متادیتا پیش از اجرای اسکریپت آماده شده باشد، همین‌جا خوانده می‌شود */
+    var ready = false;
+    function init() {
+      if (ready) return;
+      duration = video.duration || 0;
+      if (!duration) return;
+      ready = true;
+      try { video.currentTime = 0.001; } catch (error) { /* نادیده */ }
+      update();
+    }
+
+    video.addEventListener('loadedmetadata', init);
+
+    /* اگر ویدیو بارگذاری نشد، بنر به حالت تک‌صفحه با تصویر پوستر برمی‌گردد */
+    video.addEventListener('error', function () {
+      root.classList.remove('js');
+    });
+
+    video.addEventListener('seeked', apply);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    window.addEventListener('load', update);
+    update();
+    init();
+
+    /* بستن منوی کشویی موبایل پس از انتخاب یک بخش */
+    if (menu) {
+      var links = menu.querySelectorAll('.mobile-nav a');
+      for (var i = 0; i < links.length; i++) {
+        links[i].addEventListener('click', function () { menu.open = false; });
+      }
+    }
+  })();
+  </script>
 
 </body>
 </html>
