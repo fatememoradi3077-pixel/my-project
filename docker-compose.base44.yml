@@ -1,0 +1,34 @@
+# محیط اجرای Base44 — وب‌سایت استاتیک «افق املاک»
+#
+# این فایل فقط برای اجرای پیش‌نمایش در سندباکس Base44 است و بخشی از خروجی نهایی
+# پروژه (تنها دو فایل index.html و style.css) محسوب نمی‌شود.
+#
+# اجرا:  docker compose -f docker-compose.base44.yml up -d
+# سپس:  http://localhost:3000
+#
+# نکته: فایل‌های index.html و style.css به‌صورت تک‌فایل و فقط-خواندنی داخل وب‌سرور
+# سوار می‌شوند (بدون هیچ مرحله Build)، بنابراین هر ویرایش روی این دو فایل
+# بلافاصله در پیش‌نمایش دیده می‌شود.
+
+services:
+  web:
+    # تصویر پایه وب‌سرور؛ کد سایت از روی مخزن خوانده می‌شود، نه از داخل ایمیج.
+    image: nginx:alpine
+    container_name: horizon-real-estate-web
+    labels:
+      base44.project: "وبسایت افق املاک"
+      base44.kind: "web"
+      base44.port: "3000"
+    ports:
+      - "3000:80"
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+      - ./style.css:/usr/share/nginx/html/style.css:ro
+    restart: on-failure
+    healthcheck:
+      # بررسی پاسخ‌دهی واقعی وب‌سرور به صفحه اصلی و به فایل استایل
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ && wget -q -O /dev/null http://127.0.0.1/style.css || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
